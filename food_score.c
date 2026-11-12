@@ -30,3 +30,12 @@ void generateFood(void)
         }
     } while (onSnake);
 }
+
+int checkFoodEaten(void)
+{
+    if (snakeX[0] == foodX && snakeY[0] == foodY)
+    {
+        return 1;
+    }
+    return 0;
+}
