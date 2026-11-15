@@ -45,3 +45,36 @@ void growSnake(void){
         length++;
     }
 }
+
+int checkWallCollision(void){
+    if (snakeX[0] <= 0 || snakeX[0] >= WIDTH - 1 ||
+        snakeY[0] <= 0 || snakeY[0] >= HEIGHT - 1){
+        return 1;
+    }
+    return 0;
+}
+
+int checkSelfCollision(void){
+    int i;
+    for (i = 1; i < length; i++){
+        if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i]){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void resetGame(void){
+    initSnake();
+    resetScore();
+    gameOver = 0;
+    paused = 0;
+    generateFood();
+}
+
+void startGame(void){
+    resetGame();
+    gameState = STATE_PLAYING;
+
+    SetTimer(hwndMain, GAME_TIMER_ID, (UINT)speed, NULL);
+}
