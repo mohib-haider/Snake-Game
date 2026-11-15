@@ -39,3 +39,13 @@ int checkFoodEaten(void)
     }
     return 0;
 }
+
+void updateScore(void)
+{
+    score += POINTS_PER_APPLE;
+}
+
+void resetScore(void)
+{
+    score = 0;
+}
