@@ -56,3 +56,70 @@ static RECT makeRect(int l, int t, int r, int b){
     rc.bottom = b;
     return rc;
 }
+
+static void fillRect(HDC hdc, int l, int t, int r, int b, COLORREF color)
+{
+    HBRUSH brush = CreateSolidBrush(color);
+    RECT rc = makeRect(l, t, r, b);
+
+    FillRect(hdc, &rc, brush);
+    DeleteObject(brush);
+}
+
+static void fillRounded(HDC hdc, int l, int t, int r, int b, int radius,
+                        COLORREF fill, COLORREF border, int borderWidth)
+{
+    HBRUSH brush = CreateSolidBrush(fill);
+    HPEN pen = CreatePen(PS_SOLID, borderWidth, border);
+    HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, brush);
+    HPEN oldPen = (HPEN)SelectObject(hdc, pen);
+
+    RoundRect(hdc, l, t, r, b, radius, radius);
+
+    SelectObject(hdc, oldBrush);
+    SelectObject(hdc, oldPen);
+    DeleteObject(brush);
+    DeleteObject(pen);
+}
+
+static void fillCircle(HDC hdc, int cx, int cy, int r, COLORREF color)
+{
+    HBRUSH brush = CreateSolidBrush(color);
+    HPEN pen = CreatePen(PS_SOLID, 1, color);
+    HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, brush);
+    HPEN oldPen = (HPEN)SelectObject(hdc, pen);
+
+    Ellipse(hdc, cx - r, cy - r, cx + r, cy + r);
+
+    SelectObject(hdc, oldBrush);
+    SelectObject(hdc, oldPen);
+    DeleteObject(brush);
+    DeleteObject(pen);
+}
+
+static void drawTextIn(HDC hdc, const char *text, RECT *rect, int size,
+                       int bold, COLORREF color, UINT format)
+{
+    HFONT font = CreateFontA(-size, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL,
+                             FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                             ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_SWISS,
+                             "Segoe UI");
+    HFONT oldFont = (HFONT)SelectObject(hdc, font);
+
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, color);
+    DrawTextA(hdc, text, -1, rect, format);
+
+    SelectObject(hdc, oldFont);
+    DeleteObject(font);
+}
+
+static void drawTextBox(HDC hdc, const char *text, int l, int t, int r, int b,
+                        int size, int bold, COLORREF color)
+{
+    RECT rc = makeRect(l, t, r, b);
+
+    drawTextIn(hdc, text, &rc, size, bold, color,
+               DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+}
