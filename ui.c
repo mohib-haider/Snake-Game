@@ -123,3 +123,112 @@ static void drawTextBox(HDC hdc, const char *text, int l, int t, int r, int b,
     drawTextIn(hdc, text, &rc, size, bold, color,
                DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
+static const char *getDifficultyName(void)
+{
+    if (difficulty == EASY)
+    {
+        return "Easy";
+    }
+    if (difficulty == HARD)
+    {
+        return "Hard";
+    }
+    return "Medium";
+}
+
+static void drawMenuBackground(HDC hdc)
+{
+    fillRect(hdc, 0, 0, WINDOW_W, WINDOW_H, CLR_MENU_BG);
+}
+
+static void drawTitle(HDC hdc, const char *title, const char *subtitle)
+{
+    drawTextBox(hdc, title, 0, 35, WINDOW_W, 115, 60, 1, CLR_YELLOW);
+    drawTextBox(hdc, subtitle, 0, 115, WINDOW_W, 150, 18, 0, CLR_GRAY);
+}
+
+static void drawDecoration(HDC hdc)
+{
+    int i;
+    int y = 455;
+    int startX = (WINDOW_W - 10 * CELL) / 2;
+    int headX = startX + 7 * CELL;
+    int appleX = startX + 9 * CELL + CELL / 2;
+
+    for (i = 0; i < 7; i++)
+    {
+        fillRounded(hdc, startX + i * CELL + 2, y + 2,
+                    startX + (i + 1) * CELL - 2, y + CELL - 2,
+                    10, CLR_SNAKE_BODY, CLR_SNAKE_BODY, 1);
+    }
+
+    fillRounded(hdc, headX + 1, y + 1, headX + CELL - 1, y + CELL - 1,
+                12, CLR_SNAKE_HEAD, CLR_SNAKE_HEAD, 1);
+    fillCircle(hdc, headX + 16, y + 7, 3, CLR_WHITE);
+    fillCircle(hdc, headX + 16, y + 17, 3, CLR_WHITE);
+    fillCircle(hdc, headX + 17, y + 7, 1, CLR_BLACK);
+    fillCircle(hdc, headX + 17, y + 17, 1, CLR_BLACK);
+
+    fillCircle(hdc, appleX, y + CELL / 2 + 1, 9, CLR_FOOD);
+    fillCircle(hdc, appleX + 3, y + 3, 3, CLR_LEAF);
+}
+
+static void drawPanel(HDC hdc)
+{
+    fillRounded(hdc, 150, 100, 570, 450, 24, CLR_MENU_BG, CLR_YELLOW, 3);
+}
+
+static Button makeButton(int y, const char *label, int id, int highlight)
+{
+    Button b;
+
+    b.x = (WINDOW_W - BTN_W) / 2;
+    b.y = y;
+    b.w = BTN_W;
+    b.h = BTN_H;
+    b.label = label;
+    b.id = id;
+    b.highlight = highlight;
+    return b;
+}
+
+static int getButtons(Button *list)
+{
+    int n = 0;
+
+    switch (gameState)
+    {
+        case STATE_MENU:
+            list[n++] = makeButton(190, "Start Game", BTN_START, 0);
+            list[n++] = makeButton(255, "Difficulty", BTN_DIFFICULTY, 0);
+            list[n++] = makeButton(320, "High Score", BTN_HIGHSCORE, 0);
+            list[n++] = makeButton(385, "Exit", BTN_EXIT, 0);
+            break;
+
+        case STATE_DIFFICULTY:
+            list[n++] = makeButton(190, "Easy", BTN_EASY, difficulty == EASY);
+            list[n++] = makeButton(255, "Medium", BTN_MEDIUM, difficulty == MEDIUM);
+            list[n++] = makeButton(320, "Hard", BTN_HARD, difficulty == HARD);
+            list[n++] = makeButton(385, "Back", BTN_BACK, 0);
+            break;
+
+        case STATE_HIGHSCORE:
+            list[n++] = makeButton(385, "Back", BTN_BACK, 0);
+            break;
+
+        case STATE_PAUSED:
+            list[n++] = makeButton(320, "Resume", BTN_RESUME, 0);
+            list[n++] = makeButton(385, "Main Menu", BTN_MENU, 0);
+            break;
+
+        case STATE_GAMEOVER:
+            list[n++] = makeButton(320, "Play Again", BTN_PLAY_AGAIN, 0);
+            list[n++] = makeButton(385, "Main Menu", BTN_MENU, 0);
+            break;
+
+        default:
+            break;
+    }
+
+    return n;
+}
