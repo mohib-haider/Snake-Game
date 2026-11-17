@@ -94,3 +94,17 @@ void gameTick(void){
         }
     }
 }
+
+void endGame(void){
+    KillTimer(hwndMain, GAME_TIMER_ID);
+    gameOver = 1;
+    updateHighScore();
+    gameState = STATE_GAMEOVER;
+}
+
+void quitToMenu(void){
+    KillTimer(hwndMain, GAME_TIMER_ID);
+    updateHighScore();
+    paused = 0;
+    gameState = STATE_MENU;
+}
