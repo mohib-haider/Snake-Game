@@ -78,3 +78,19 @@ void startGame(void){
 
     SetTimer(hwndMain, GAME_TIMER_ID, (UINT)speed, NULL);
 }
+void gameTick(void){
+    direction = nextDirection;
+    moveSnake();
+    if (checkWallCollision() || checkSelfCollision()){
+        endGame();
+        return;
+    }
+    if (checkFoodEaten()){
+        growSnake();
+        updateScore();
+        generateFood();
+        if (gameOver){
+            endGame();
+        }
+    }
+}
