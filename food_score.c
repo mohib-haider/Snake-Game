@@ -81,7 +81,11 @@ void saveHighScore(void)
     fclose(fp);
 }
 
-void resetScore(void)
+void updateHighScore(void)
 {
-    score = 0;
+    if (score > highScore)
+    {
+        highScore = score;
+        saveHighScore();
+    }
 }
