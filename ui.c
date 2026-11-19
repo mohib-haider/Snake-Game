@@ -232,3 +232,135 @@ static int getButtons(Button *list)
 
     return n;
 }
+static void drawButton(HDC hdc, const Button *b)
+{
+    COLORREF fill = CLR_BTN;
+    COLORREF textColor = CLR_WHITE;
+
+    if (b->highlight)
+    {
+        fill = CLR_BTN_ACTIVE;
+        textColor = CLR_DARK_TEXT;
+    }
+    else if (b->id == hoverId)
+    {
+        fill = CLR_BTN_HOVER;
+    }
+
+    fillRounded(hdc, b->x, b->y, b->x + b->w, b->y + b->h, 16,
+                fill, CLR_BTN_BORDER, 2);
+    drawTextBox(hdc, b->label, b->x, b->y, b->x + b->w, b->y + b->h,
+                22, 1, textColor);
+}
+
+static void drawButtons(HDC hdc)
+{
+    Button list[4];
+    int count = getButtons(list);
+    int i;
+
+    for (i = 0; i < count; i++)
+    {
+        drawButton(hdc, &list[i]);
+    }
+}
+
+static int buttonAt(int x, int y)
+{
+    Button list[4];
+    int count = getButtons(list);
+    int i;
+
+    for (i = 0; i < count; i++)
+    {
+        if (x >= list[i].x && x < list[i].x + list[i].w &&
+            y >= list[i].y && y < list[i].y + list[i].h)
+        {
+            return list[i].id;
+        }
+    }
+    return BTN_NONE;
+}
+
+static void doAction(int id)
+{
+    switch (id)
+    {
+        case BTN_START:
+        case BTN_PLAY_AGAIN:
+            startGame();
+            break;
+
+        case BTN_DIFFICULTY:
+            gameState = STATE_DIFFICULTY;
+            break;
+
+        case BTN_HIGHSCORE:
+            gameState = STATE_HIGHSCORE;
+            break;
+
+        case BTN_EXIT:
+            DestroyWindow(hwndMain);
+            break;
+
+        case BTN_EASY:
+            setDifficulty(EASY);
+            gameState = STATE_MENU;
+            break;
+
+        case BTN_MEDIUM:
+            setDifficulty(MEDIUM);
+            gameState = STATE_MENU;
+            break;
+
+        case BTN_HARD:
+            setDifficulty(HARD);
+            gameState = STATE_MENU;
+            break;
+
+        case BTN_BACK:
+        case BTN_MENU:
+            quitToMenu();
+            break;
+
+        case BTN_RESUME:
+            pauseGame();
+            break;
+
+        default:
+            break;
+    }
+
+    hoverId = BTN_NONE;
+    requestRedraw();
+}
+
+void drawBoard(HDC hdc)
+{
+    int x, y;
+    int left, top;
+
+    for (y = 0; y < HEIGHT; y++)
+    {
+        for (x = 0; x < WIDTH; x++)
+        {
+            left = x * CELL;
+            top = HUD_HEIGHT + y * CELL;
+
+            if (x == 0 || y == 0 || x == WIDTH - 1 || y == HEIGHT - 1)
+            {
+                fillRect(hdc, left, top, left + CELL, top + CELL, CLR_WALL);
+                fillRect(hdc, left + 3, top + 3, left + CELL - 3, top + CELL - 3,
+                         CLR_WALL_LIGHT);
+            }
+            else if ((x + y) % 2 == 0)
+            {
+                fillRect(hdc, left, top, left + CELL, top + CELL, CLR_GRASS_A);
+            }
+            else
+            {
+                fillRect(hdc, left, top, left + CELL, top + CELL, CLR_GRASS_B);
+            }
+        }
+    }
+}
