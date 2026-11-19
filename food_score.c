@@ -49,3 +49,39 @@ void resetScore(void)
 {
     score = 0;
 }
+
+void loadHighScore(void)
+{
+    FILE *fp = fopen(HIGHSCORE_FILE, "r");
+    if (fp == NULL)
+    {
+        highScore = 0;
+        return;
+    }
+    if (fscanf(fp, "%d", &highScore) != 1)
+    {
+        highScore = 0;
+    }
+    if (highScore < 0)
+    {
+        highScore = 0;
+    }
+    fclose(fp);
+}
+
+void saveHighScore(void)
+{
+    FILE *fp = fopen(HIGHSCORE_FILE, "w");
+
+    if (fp == NULL)
+    {
+        return;
+    }
+    fprintf(fp, "%d", highScore);
+    fclose(fp);
+}
+
+void resetScore(void)
+{
+    score = 0;
+}
