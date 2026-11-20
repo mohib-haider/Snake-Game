@@ -89,3 +89,39 @@ void updateHighScore(void)
         saveHighScore();
     }
 }
+
+void setDifficulty(int level)
+{
+    switch (level)
+    {
+        case EASY:
+            difficulty = EASY;
+            speed = SPEED_EASY;
+            break;
+
+        case HARD:
+            difficulty = HARD;
+            speed = SPEED_HARD;
+            break;
+
+        case MEDIUM:
+        default:
+            difficulty = MEDIUM;
+            speed = SPEED_MEDIUM;
+            break;
+    }
+}
+
+void pauseGame(void)
+{
+    if (gameState == STATE_PLAYING)
+    {
+        paused = 1;
+        gameState = STATE_PAUSED;
+    }
+    else if (gameState == STATE_PAUSED)
+    {
+        paused = 0;
+        gameState = STATE_PLAYING;
+    }
+}
