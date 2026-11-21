@@ -80,3 +80,52 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     return DefWindowProcA(hwnd, msg, wParam, lParam);
 }
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine, int nCmdShow){
+    WNDCLASSA wc;
+    MSG msg;
+    DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    RECT rect;
+
+    (void)hPrevInstance;
+    (void)lpCmdLine;
+
+    memset(&wc, 0, sizeof(wc));
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = WndProc;
+    wc.hInstance = hInstance;
+    wc.hCursor = LoadCursorA(NULL, IDC_ARROW);
+    wc.hbrBackground = NULL;
+    wc.lpszClassName = "SnakeGameWindow";
+
+    if (!RegisterClassA(&wc))
+    {
+        MessageBoxA(NULL, "Could not register the window.", "Error", MB_OK);
+        return 1;
+    }
+
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = WINDOW_W;
+    rect.bottom = WINDOW_H;
+    AdjustWindowRect(&rect, style, FALSE);
+
+    hwndMain = CreateWindowA("SnakeGameWindow", "Snake Game", style,
+                             CW_USEDEFAULT, CW_USEDEFAULT,
+                             rect.right - rect.left, rect.bottom - rect.top,
+                             NULL, NULL, hInstance, NULL);
+    if (hwndMain == NULL){
+        MessageBoxA(NULL, "Could not create the window.", "Error", MB_OK);
+        return 1;
+    }
+
+    loadHighScore();
+    ShowWindow(hwndMain, nCmdShow);
+    UpdateWindow(hwndMain);
+
+    while (GetMessageA(&msg, NULL, 0, 0) > 0){
+        TranslateMessage(&msg);
+        DispatchMessageA(&msg);
+    }
+    return (int)msg.wParam;
+}
