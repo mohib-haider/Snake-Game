@@ -40,8 +40,9 @@
 #define BTN_X           ((WINDOW_W - BTN_W) / 2)
 
 typedef struct{
-    int state,id,y;
+    int state,y;
     const char *label;
+    int id;
 } Button;
 
 static const Button buttons[] ={
