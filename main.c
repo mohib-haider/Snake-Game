@@ -5,127 +5,94 @@ int snakeY[MAX_LENGTH];
 int length = START_LENGTH;
 int direction = DIR_RIGHT;
 int nextDirection = DIR_RIGHT;
-int foodX = 0,foodY = 0;
-int score = 0,highScore = 0;
+
+int foodX = 0;
+int foodY = 0;
+
+int score = 0;
+int highScore = 0;
+
 int difficulty = MEDIUM;
 int speed = SPEED_MEDIUM;
 int gameOver = 0;
 int paused = 0;
 int gameState = STATE_MENU;
 
-int oldTailX = 0;
-int oldTailY = 0;
-
 HWND hwndMain = NULL;
 
-static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
-    switch (msg){
-        case WM_PAINT:{
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
-            RECT rc;
-            int w, h;
-            HDC memDC;
-            HBITMAP bitmap;
-            HBITMAP oldBitmap;
+static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    if (msg == WM_PAINT){
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        HDC memDC = CreateCompatibleDC(hdc);
+        HBITMAP bitmap = CreateCompatibleBitmap(hdc, WINDOW_W, WINDOW_H);
+        HBITMAP old = (HBITMAP)SelectObject(memDC, bitmap);
 
-            GetClientRect(hwnd, &rc);
-            w = rc.right;
-            h = rc.bottom;
+        drawFrame(memDC);
+        BitBlt(hdc, 0, 0, WINDOW_W, WINDOW_H, memDC, 0, 0, SRCCOPY);
 
-            memDC = CreateCompatibleDC(hdc);
-            bitmap = CreateCompatibleBitmap(hdc, w, h);
-            oldBitmap = (HBITMAP)SelectObject(memDC, bitmap);
-
-            drawFrame(memDC);
-            BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
-            SelectObject(memDC, oldBitmap);
-            DeleteObject(bitmap);
-            DeleteDC(memDC);
-            EndPaint(hwnd, &ps);
-            return 0;
-        }
-
-        case WM_ERASEBKGND:
-            return 1;
-
-        case WM_TIMER:
-
-            if (wParam == GAME_TIMER_ID && gameState == STATE_PLAYING){
-                gameTick();
-                InvalidateRect(hwnd, NULL, FALSE);
-            }
-            return 0;
-
-        case WM_KEYDOWN:
-            handleKeyDown((int)wParam);
-            return 0;
-
-        case WM_LBUTTONDOWN:
-            handleMouseClick((short)LOWORD(lParam), (short)HIWORD(lParam));
-            return 0;
-
-        case WM_MOUSEMOVE:
-            handleMouseMove((short)LOWORD(lParam), (short)HIWORD(lParam));
-            return 0;
-
-        case WM_DESTROY:
-            KillTimer(hwnd, GAME_TIMER_ID);
-            PostQuitMessage(0);
-            return 0;
-
-        default:
-            break;
+        SelectObject(memDC, old);
+        DeleteObject(bitmap);
+        DeleteDC(memDC);
+        EndPaint(hwnd, &ps);
+        return 0;
     }
-
+    if (msg == WM_ERASEBKGND)
+        return 1;
+    if (msg == WM_TIMER && gameState == STATE_PLAYING){
+        gameTick();
+        InvalidateRect(hwnd, NULL, FALSE);
+        return 0;
+    }
+    if (msg == WM_KEYDOWN){
+        handleKeyDown((int)wParam);
+        return 0;
+    }
+    if (msg == WM_LBUTTONDOWN){
+        handleMouseClick(LOWORD(lParam), HIWORD(lParam));
+        return 0;
+    }
+    if (msg == WM_MOUSEMOVE){
+        handleMouseMove(LOWORD(lParam), HIWORD(lParam));
+        return 0;
+    }
+    if (msg == WM_DESTROY){
+        updateHighScore();
+        PostQuitMessage(0);
+        return 0;
+    }
     return DefWindowProcA(hwnd, msg, wParam, lParam);
 }
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine, int nCmdShow){
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, LPSTR cmdLine, int nCmdShow){
+	(void)hPrev;
+	(void)cmdLine;
     WNDCLASSA wc;
     MSG msg;
-    DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-    RECT rect;
-
-    (void)hPrevInstance;
-    (void)lpCmdLine;
+    DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    RECT size = {0, 0, WINDOW_W, WINDOW_H};
 
     memset(&wc, 0, sizeof(wc));
-    wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInstance;
     wc.hCursor = LoadCursorA(NULL, IDC_ARROW);
-    wc.hbrBackground = NULL;
-    wc.lpszClassName = "SnakeGameWindow";
+    wc.lpszClassName = "SnakeGame";
+    RegisterClassA(&wc);
 
-    if (!RegisterClassA(&wc))
-    {
-        MessageBoxA(NULL, "Could not register the window.", "Error", MB_OK);
-        return 1;
-    }
-
-    rect.left = 0;
-    rect.top = 0;
-    rect.right = WINDOW_W;
-    rect.bottom = WINDOW_H;
-    AdjustWindowRect(&rect, style, FALSE);
-
-    hwndMain = CreateWindowA("SnakeGameWindow", "Snake Game", style,
+    AdjustWindowRect(&size, style, FALSE);
+    hwndMain = CreateWindowA("SnakeGame", "Snake Game", style,
                              CW_USEDEFAULT, CW_USEDEFAULT,
-                             rect.right - rect.left, rect.bottom - rect.top,
+                             size.right - size.left, size.bottom - size.top,
                              NULL, NULL, hInstance, NULL);
-    if (hwndMain == NULL){
-        MessageBoxA(NULL, "Could not create the window.", "Error", MB_OK);
+    if (hwndMain == NULL)
         return 1;
-    }
 
     loadHighScore();
     ShowWindow(hwndMain, nCmdShow);
-    UpdateWindow(hwndMain);
 
-    while (GetMessageA(&msg, NULL, 0, 0) > 0){
-        TranslateMessage(&msg);
+    while (GetMessageA(&msg, NULL, 0, 0))
         DispatchMessageA(&msg);
-    }
-    return (int)msg.wParam;
+
+    return 0;
 }
