@@ -70,8 +70,6 @@ extern int gameOver;
 extern int paused;
 extern int gameState;
 
-extern int oldTailX;
-extern int oldTailY;
 
 extern HWND hwndMain;
 
